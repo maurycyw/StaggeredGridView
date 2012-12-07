@@ -112,7 +112,7 @@ public class StaggeredGridView extends ViewGroup {
     private boolean mFastChildLayout;
     private boolean mPopulating;
     private boolean mInLayout;
-    private int mRestoreOffset;
+    private int[] mRestoreOffsets;
 
     private final RecycleBin mRecycler = new RecycleBin();
 
@@ -149,7 +149,9 @@ public class StaggeredGridView extends ViewGroup {
 
     private final EdgeEffectCompat mTopEdge;
     private final EdgeEffectCompat mBottomEdge;
-
+    
+    private ArrayList<ArrayList<Integer>> mColMappings = new ArrayList<ArrayList<Integer>>(); 
+    
     private Runnable mPendingCheckForTap;
     
     private ContextMenuInfo mContextMenuInfo = null;
@@ -910,7 +912,8 @@ public class StaggeredGridView extends ViewGroup {
     }
 
     private void populate() {
-        if (getWidth() == 0 || getHeight() == 0) {
+    	Log.w(TAG, "populate()");
+    	if (getWidth() == 0 || getHeight() == 0) {
             return;
         }
 
@@ -922,22 +925,40 @@ public class StaggeredGridView extends ViewGroup {
         }
 
         final int colCount = mColCount;
+        
+        // setup arraylist for mappings
+        if(mColMappings.size() != mColCount){
+        	mColMappings.clear();
+        	for(int i=0; i < mColCount; i++){
+        		mColMappings.add(new ArrayList<Integer>());
+        	}
+        }
+        
         if (mItemTops == null || mItemTops.length != colCount) {
-            mItemTops = new int[colCount];
+            Log.w(TAG, "MTOPS IS NULL");
+        	mItemTops = new int[colCount];
             mItemBottoms = new int[colCount];
-            final int top = getPaddingTop();
-            final int offset = top + Math.min(mRestoreOffset, 0);
-            Arrays.fill(mItemTops, offset);
-            Arrays.fill(mItemBottoms, offset);
+            
             mLayoutRecords.clear();
             if (mInLayout) {
                 removeAllViewsInLayout();
             } else {
                 removeAllViews();
             }
-            mRestoreOffset = 0;
         }
 
+        final int top = getPaddingTop();
+        for(int i = 0; i<colCount; i++){
+        	final int offset =  top + ((mRestoreOffsets != null)? Math.min(mRestoreOffsets[i], 0) : 0);
+        	Log.w(TAG, "SET MTOPS: "+offset);
+        	mItemTops[i] = offset;
+        	mItemBottoms[i] = offset;
+        }
+        
+        // clear out restoreOffsets
+//        if(mRestoreOffsets!=null)
+//        Arrays.fill(mRestoreOffsets, 0);
+        
         mPopulating = true;
         layoutChildren(mDataChanged);
         fillDown(mFirstPosition + getChildCount(), 0);
@@ -946,6 +967,8 @@ public class StaggeredGridView extends ViewGroup {
         mDataChanged = false;
     }
 
+    
+    
     final void offsetChildren(int offset) {
         final int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
@@ -979,6 +1002,8 @@ public class StaggeredGridView extends ViewGroup {
 
         final int childCount = getChildCount();
         int amountRemoved = 0;
+        
+        Log.w(TAG, "childCount: "+childCount);
         
         for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
@@ -1020,8 +1045,8 @@ public class StaggeredGridView extends ViewGroup {
                 child.measure(widthSpec, heightSpec);
             }
 
-            int childTop = mItemBottoms[col] > Integer.MIN_VALUE ?
-                    mItemBottoms[col] + mItemMargin : child.getTop();
+            int childTop = mItemBottoms[col] > Integer.MIN_VALUE ? mItemBottoms[col] + mItemMargin : child.getTop();
+            
             if (span > 1) {
                 int lowest = childTop;
                 for (int j = col + 1; j < col + span; j++) {
@@ -1133,7 +1158,25 @@ public class StaggeredGridView extends ViewGroup {
         int position = fromPosition;
 
         while (nextCol >= 0 && mItemTops[nextCol] > fillTo && position >= 0) {
-            final View child = obtainView(position, null);
+            
+        	// make sure the nextCol is correct. check to see if has been mapped 
+        	// otherwise stick to getNextColumnUp()
+        	if(!mColMappings.get(nextCol).contains(position)){
+        		int col = 0;
+        		for(ArrayList<Integer> map : mColMappings){
+        			if(map.contains(position)){
+        				nextCol = col;
+        			}
+        			col++;
+        		}
+        	}
+        	
+        	// save the mapping in case
+        	if(!mColMappings.get(nextCol).contains(position))
+            	mColMappings.get(nextCol).add(position);
+        	
+        	
+        	final View child = obtainView(position, null);
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
             
             if(lp == null){
@@ -1244,8 +1287,7 @@ public class StaggeredGridView extends ViewGroup {
         final int paddingLeft = getPaddingLeft();
         final int paddingRight = getPaddingRight();
         final int itemMargin = mItemMargin;
-        final int colWidth =
-                (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
+        final int colWidth = (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
         final int gridBottom = getHeight() - getPaddingBottom();
         final int fillTo = gridBottom + overhang;
         int nextCol = getNextColumnDown();
@@ -1260,7 +1302,6 @@ public class StaggeredGridView extends ViewGroup {
             }
             if (child.getParent() != this) {
                 if (mInLayout) {
-                	Log.w("GENERATE", (lp==null)+" 2 ");
                     addViewInLayout(child, -1, lp);
                 } else {
                     addView(child);
@@ -1328,12 +1369,19 @@ public class StaggeredGridView extends ViewGroup {
             } else {
                 startFrom = mItemBottoms[nextCol];
             }
+            
+            Log.w(TAG, "STARTFROM: "+startFrom+" nextCol:"+nextCol+" mItemBottoms[nextCol]:"+mItemBottoms[nextCol]);
+            
             final int childTop = startFrom + itemMargin;
             final int childBottom = childTop + childHeight;
             final int childLeft = paddingLeft + nextCol * (colWidth + itemMargin);
             final int childRight = childLeft + child.getMeasuredWidth();
             child.layout(childLeft, childTop, childRight, childBottom);
 
+            // add the position to the mapping
+            if(!mColMappings.get(nextCol).contains(position))
+            	mColMappings.get(nextCol).add(position);
+            
             for (int i = nextCol; i < nextCol + span; i++) {
                 mItemBottoms[i] = childBottom + rec.getMarginBelow(i - nextCol);
             }
@@ -1351,6 +1399,27 @@ public class StaggeredGridView extends ViewGroup {
         return lowestView - gridBottom;
     }
 
+    /**
+     * for debug purposes
+     */
+    private void displayMapping(){
+    	Log.w(TAG, "MAP ****************");
+    	StringBuilder sb = new StringBuilder();
+    	int col = 0;
+    	for(ArrayList<Integer> map : this.mColMappings){
+    		sb.append("COL"+col);
+    		sb.append(' ');
+    		
+    		for(Integer i : map){
+    			
+    		}
+    		
+    		
+    		col++;
+    	}
+    	Log.w(TAG, "MAP END ****************");
+    }
+    
     /**
      * @return column that the next view filling upwards should occupy. This is the bottom-most
      *         position available for a single-column item.
@@ -1576,7 +1645,8 @@ public class StaggeredGridView extends ViewGroup {
 
         // Reset the first visible position in the grid to be item 0
         mFirstPosition = 0;
-        mRestoreOffset = 0;
+        if(mRestoreOffsets!=null)
+        Arrays.fill(mRestoreOffsets, 0);
     }
 
     /**
@@ -1624,7 +1694,24 @@ public class StaggeredGridView extends ViewGroup {
             ss.firstId = mAdapter.getItemId(position);
         }
         if (getChildCount() > 0) {
-            ss.topOffset = getChildAt(0).getTop() - mItemMargin - getPaddingTop();
+        	
+        	int topOffsets[]= new int[this.mColCount];
+        	
+        	for(int i =0; i < mColCount; i++){
+        		if(getChildAt(i)!=null)
+        			topOffsets[i] = getChildAt(i).getTop() - mItemMargin - getPaddingTop();
+        	}
+        	
+        	
+            ss.topOffsets = topOffsets;
+            
+            // convert nested arraylist so it can be parcelable 
+            ArrayList<ColMap> convert = new ArrayList<ColMap>();
+            for(ArrayList<Integer> cols : mColMappings){
+            	convert.add(new ColMap(cols));
+            }
+            
+            ss.mapping = convert;
         }
         return ss;
     }
@@ -1635,7 +1722,21 @@ public class StaggeredGridView extends ViewGroup {
         super.onRestoreInstanceState(ss.getSuperState());
         mDataChanged = true;
         mFirstPosition = ss.position;
-        mRestoreOffset = ss.topOffset;
+        mRestoreOffsets = ss.topOffsets;
+        
+        Log.w(TAG, "OFFSETS **********");
+        for(Integer i : mRestoreOffsets){
+        	Log.w(TAG, "OFFSETS "+i);
+        }
+        
+        ArrayList<ColMap> convert = ss.mapping;
+        
+        if(convert != null){
+        	mColMappings.clear();
+        	for(ColMap colMap : convert){
+        		mColMappings.add(colMap.values);
+        	}
+        }
         
         if(ss.firstId>=0){
         	mSelectorPosition = INVALID_POSITION;	
@@ -1840,10 +1941,56 @@ public class StaggeredGridView extends ViewGroup {
         }
     }
 
+    static class ColMap implements Parcelable {
+    	private ArrayList<Integer> values;
+    	int tempMap[];
+    	
+    	public ColMap(ArrayList<Integer> values){
+    		this.values = values;
+    	}
+    	
+    	private ColMap(Parcel in) {
+    		in.readIntArray(tempMap);
+    		values = new ArrayList<Integer>();
+    	    for (int index = 0; index < tempMap.length; index++) {
+    	    	values.add(tempMap[index]);
+    	    }
+    	}
+    	
+		@Override
+		public void writeToParcel(Parcel out, int flags) {
+			tempMap = toIntArray(values);
+			out.writeIntArray(tempMap);
+		}
+    	
+		public static final Creator<ColMap> CREATOR = new Creator<ColMap>() {
+			public ColMap createFromParcel(Parcel source) {
+				return new ColMap(source);
+			}
+
+			public ColMap[] newArray(int size) {
+				return new ColMap[size];
+			}
+		};
+
+		int[] toIntArray(ArrayList<Integer> list) {
+			int[] ret = new int[list.size()];
+			for (int i = 0; i < ret.length; i++)
+				ret[i] = list.get(i);
+			return ret;
+		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+    }
+    
     static class SavedState extends BaseSavedState {
         long firstId = -1;
         int position;
-        int topOffset;
+        int topOffsets[];
+        ArrayList<ColMap> mapping;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1853,7 +2000,9 @@ public class StaggeredGridView extends ViewGroup {
             super(in);
             firstId = in.readLong();
             position = in.readInt();
-            topOffset = in.readInt();
+            in.readIntArray(topOffsets);
+            in.readTypedList(mapping, ColMap.CREATOR);
+            
         }
 
         @Override
@@ -1861,7 +2010,8 @@ public class StaggeredGridView extends ViewGroup {
             super.writeToParcel(out, flags);
             out.writeLong(firstId);
             out.writeInt(position);
-            out.writeInt(topOffset);
+            out.writeIntArray(topOffsets);
+            out.writeTypedList(mapping);
         }
 
         @Override
@@ -1872,8 +2022,7 @@ public class StaggeredGridView extends ViewGroup {
                         + " position=" + position + "}";
         }
 
-        public static final Parcelable.Creator<SavedState> CREATOR
-                = new Parcelable.Creator<SavedState>() {
+        public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<SavedState>() {
             public SavedState createFromParcel(Parcel in) {
                 return new SavedState(in);
             }

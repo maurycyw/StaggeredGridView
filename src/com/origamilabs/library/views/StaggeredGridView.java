@@ -949,20 +949,23 @@ public class StaggeredGridView extends ViewGroup {
 
         final int top = getPaddingTop();
         for(int i = 0; i<colCount; i++){
-        	final int offset =  top + ((mRestoreOffsets != null)? Math.min(mRestoreOffsets[i], 0) : 0);
+        	final int offset =  top + ((mRestoreOffsets != null)? mRestoreOffsets[i] : 0);
         	Log.w(TAG, "SET MTOPS: "+offset);
         	mItemTops[i] = offset;
         	mItemBottoms[i] = offset;
         }
         
-        // clear out restoreOffsets
-//        if(mRestoreOffsets!=null)
-//        Arrays.fill(mRestoreOffsets, 0);
-        
         mPopulating = true;
+        
+        displayMapping();
+        
         layoutChildren(mDataChanged);
         fillDown(mFirstPosition + getChildCount(), 0);
         fillUp(mFirstPosition - 1, 0);
+        
+        // clear out restoreOffsets
+        if(mRestoreOffsets!=null) Arrays.fill(mRestoreOffsets, 0);
+        
         mPopulating = false;
         mDataChanged = false;
     }
@@ -993,8 +996,7 @@ public class StaggeredGridView extends ViewGroup {
         final int paddingLeft = getPaddingLeft();
         final int paddingRight = getPaddingRight();
         final int itemMargin = mItemMargin;
-        final int colWidth =
-                (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
+        final int colWidth = (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
         int rebuildLayoutRecordsBefore = -1;
         int rebuildLayoutRecordsAfter = -1;
 
@@ -1161,19 +1163,22 @@ public class StaggeredGridView extends ViewGroup {
             
         	// make sure the nextCol is correct. check to see if has been mapped 
         	// otherwise stick to getNextColumnUp()
-        	if(!mColMappings.get(nextCol).contains(position)){
-        		int col = 0;
-        		for(ArrayList<Integer> map : mColMappings){
-        			if(map.contains(position)){
-        				nextCol = col;
+        	if(!mColMappings.get(nextCol).contains((Integer) position)){
+        		for(int i=0; i < mColMappings.size(); i++){
+        			if(mColMappings.get(i).contains((Integer) position)){
+        				nextCol = i;
+        				Log.w(TAG, "FILLUP found pos:"+position+" col:"+nextCol);
+
+        				break;
         			}
-        			col++;
         		}
+        	}else{
+        		Log.w(TAG, "FILLUP found2 pos:"+position+" col:"+nextCol);
         	}
         	
-        	// save the mapping in case
-        	if(!mColMappings.get(nextCol).contains(position))
-            	mColMappings.get(nextCol).add(position);
+//        	// save the mapping in case
+//        	if(!mColMappings.get(nextCol).contains(position))
+//            	mColMappings.get(nextCol).add(position);
         	
         	
         	final View child = obtainView(position, null);
@@ -1199,7 +1204,7 @@ public class StaggeredGridView extends ViewGroup {
             LayoutRecord rec;
             if (span > 1) {
                 rec = getNextRecordUp(position, span);
-                nextCol = rec.column;
+//                nextCol = rec.column;
             } else {
                 rec = mLayoutRecords.get(position);
             }
@@ -1215,7 +1220,7 @@ public class StaggeredGridView extends ViewGroup {
                 rec.column = nextCol;
                 invalidateBefore = true;
             } else {
-                nextCol = rec.column;
+//                nextCol = rec.column;
             }
 
             if (mHasStableIds) {
@@ -1294,7 +1299,24 @@ public class StaggeredGridView extends ViewGroup {
         int position = fromPosition;
 
         while (nextCol >= 0 && mItemBottoms[nextCol] < fillTo && position < mItemCount) {
-            final View child = obtainView(position, null);
+            
+        	// check to see if its available...
+        	if(!mColMappings.get(nextCol).contains((Integer) position)){
+        		for(int i=0; i < mColMappings.size(); i++){
+        			if(mColMappings.get(i).contains((Integer) position)){
+        				nextCol = i;
+        				Log.w(TAG, "FILLDOWN found pos:"+position+" col:"+nextCol);
+
+        				break;
+        			}
+        		}
+        	}else{
+        		Log.w(TAG, "FILLDOWN found2 pos:"+position+" col:"+nextCol);
+        	}
+        	
+        	
+        	
+        	final View child = obtainView(position, null);
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
             if(lp == null){
             	lp = this.generateDefaultLayoutParams();
@@ -1315,7 +1337,7 @@ public class StaggeredGridView extends ViewGroup {
             LayoutRecord rec;
             if (span > 1) {
                 rec = getNextRecordDown(position, span);
-                nextCol = rec.column;
+//                nextCol = rec.column;
             } else {
                 rec = mLayoutRecords.get(position);
             }
@@ -1331,7 +1353,7 @@ public class StaggeredGridView extends ViewGroup {
                 rec.column = nextCol;
                 invalidateAfter = true;
             } else {
-                nextCol = rec.column;
+//                nextCol = rec.column;
             }
 
             if (mHasStableIds) {
@@ -1406,15 +1428,15 @@ public class StaggeredGridView extends ViewGroup {
     	Log.w(TAG, "MAP ****************");
     	StringBuilder sb = new StringBuilder();
     	int col = 0;
+    	
     	for(ArrayList<Integer> map : this.mColMappings){
-    		sb.append("COL"+col);
+    		sb.append("COL"+col+":");
     		sb.append(' ');
-    		
-    		for(Integer i : map){
-    			
+    		for(Integer i: map){
+    			sb.append(i);
+    			sb.append(" , ");
     		}
-    		
-    		
+    		Log.w("DISPLAY", sb.toString());
     		col++;
     	}
     	Log.w(TAG, "MAP END ****************");
@@ -1690,9 +1712,11 @@ public class StaggeredGridView extends ViewGroup {
         final SavedState ss = new SavedState(superState);
         final int position = mFirstPosition;
         ss.position = position;
+        
         if (position >= 0 && mAdapter != null && position < mAdapter.getCount()) {
             ss.firstId = mAdapter.getItemId(position);
         }
+        
         if (getChildCount() > 0) {
         	
         	int topOffsets[]= new int[this.mColCount];

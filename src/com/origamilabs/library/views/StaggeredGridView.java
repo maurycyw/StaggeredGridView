@@ -965,10 +965,10 @@ public class StaggeredGridView extends ViewGroup {
         mPopulating = false;
         mDataChanged = false;
         
-        if(clearData){
-        	if(mRestoreOffsets!=null)
-        		Arrays.fill(mRestoreOffsets,0);
-        }
+//        if(clearData){
+//        	if(mRestoreOffsets!=null)
+//        		Arrays.fill(mRestoreOffsets,0);
+//        }
     }
 
     

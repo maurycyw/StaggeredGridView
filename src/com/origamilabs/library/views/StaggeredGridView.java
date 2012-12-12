@@ -859,7 +859,7 @@ public class StaggeredGridView extends ViewGroup {
 
     public void endFastChildLayout() {
         mFastChildLayout = false;
-//        populate(false);
+        populate(false);
     }
 
     @Override
@@ -951,8 +951,6 @@ public class StaggeredGridView extends ViewGroup {
         }
         
         mPopulating = true;
-        
-//        displayMapping();
         
         layoutChildren(mDataChanged);
         fillDown(mFirstPosition + getChildCount(), 0);
@@ -1145,7 +1143,7 @@ public class StaggeredGridView extends ViewGroup {
      * @return the max overhang beyond the beginning of the view of any added items at the top
      */
     final int fillUp(int fromPosition, int overhang) {
-    	Log.w("FILLUP", "fromPosition:"+fromPosition+" overhang:"+overhang);
+//    	Log.w("FILLUP", "fromPosition:"+fromPosition+" overhang:"+overhang);
         final int paddingLeft = getPaddingLeft();
         final int paddingRight = getPaddingRight();
         final int itemMargin = mItemMargin;
@@ -1237,7 +1235,7 @@ public class StaggeredGridView extends ViewGroup {
             int itemTop = mItemTops[nextCol];
             
             final int startFrom;
-            if (span > 1) {
+//            if (span > 1) {
                 int highest = mItemTops[nextCol];
                 for (int i = nextCol + 1; i < nextCol + span; i++) {
                     final int top = mItemTops[i];
@@ -1246,18 +1244,29 @@ public class StaggeredGridView extends ViewGroup {
                     }
                 }
                 startFrom = highest;
-            } else {
-                startFrom = mItemTops[nextCol];
-            }
+//            } else {
+//                startFrom = mItemTops[nextCol];
+//            }
             
-            Log.w(TAG, "FILLUP found2 pos:"+position+" col:"+nextCol+" colTop:"+itemTop+" startFrom:"+startFrom);
+//            Log.w(TAG, "FILLUP found2 pos:"+position+" col:"+nextCol+" colTop:"+itemTop+" startFrom:"+startFrom);
             
-            final int childBottom = startFrom;
-            final int childTop = childBottom - childHeight;
+            int childBottom = startFrom;
+            int childTop = childBottom - childHeight;
             final int childLeft = paddingLeft + nextCol * (colWidth + itemMargin);
             final int childRight = childLeft + child.getMeasuredWidth();
+            
+            if(position == 0){
+            	if(this.getChildCount()>1){
+            		childTop = this.getChildAt(1).getTop();
+            		childBottom = childTop + childHeight;
+            	}
+            }
+            
             child.layout(childLeft, childTop, childRight, childBottom);
 
+            Log.w("FILLDOWN", "childTop: "+childTop+" position:"+position+" mItemTops[nextCol]:"+mItemTops[nextCol]);
+            
+            
             Log.w("TEST", "***** ");
             for (int i = nextCol; i < nextCol + span; i++) { 
             	Log.w("TEST", "i: "+i+" itemTops:"+(childTop - rec.getMarginAbove(i-nextCol) - itemMargin)+" span:"+span);
@@ -1288,6 +1297,29 @@ public class StaggeredGridView extends ViewGroup {
         return gridTop - highestView;
     }
 
+    
+    private View getLastChildAtColumn(int column){
+    	
+    	if(this.getChildCount() > column){
+    		for(int i = getChildCount(); i>0; i--){
+    			final View child = getChildAt(i-1);
+    			final int left = child.getLeft();
+    			if(left > (this.getPaddingLeft()+this.mItemMargin)){
+    				// is right col
+    				if(column == 1){
+    					return child;
+    				}
+    			}else{
+    				if(column == 0){
+    					return child;
+    				}
+    			}
+    		}
+    	}
+    	
+    	return null;
+    }
+    
     private View getFirstChildAtColumn(int column){
     	
     	if(this.getChildCount() > column){
@@ -1318,18 +1350,18 @@ public class StaggeredGridView extends ViewGroup {
      * @return the max overhang beyond the end of the view of any added items at the bottom
      */
     final int fillDown(int fromPosition, int overhang) {
-    	Log.w("FILLDOWN", "fromPosition:"+fromPosition+" overhang:"+overhang);
+    	
         final int paddingLeft = getPaddingLeft();
         final int paddingRight = getPaddingRight();
         final int itemMargin = mItemMargin;
         final int colWidth = (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
         final int gridBottom = getHeight() - getPaddingBottom();
         final int fillTo = gridBottom + overhang;
-        int nextCol = getNextColumnDown();
+        int nextCol = getNextColumnDown(fromPosition);
         int position = fromPosition;
 
         while (nextCol >= 0 && mItemBottoms[nextCol] < fillTo && position < mItemCount) {
-            
+//        	Log.w("FILLDOWN", "position:"+fromPosition+" nextCol:"+nextCol);
         	// check to see if its available... should not chekc should create
 //        	if(!mColMappings.get(nextCol).contains((Integer) position)){
 //        		for(int i=0; i < mColMappings.size(); i++){
@@ -1420,7 +1452,7 @@ public class StaggeredGridView extends ViewGroup {
                 startFrom = mItemBottoms[nextCol];
             }
             
-            Log.w(TAG, "STARTFROM: "+startFrom+" nextCol:"+nextCol+" mItemBottoms[nextCol]:"+mItemBottoms[nextCol]);
+            
             
             final int childTop = startFrom + itemMargin;
             final int childBottom = childTop + childHeight;
@@ -1428,6 +1460,7 @@ public class StaggeredGridView extends ViewGroup {
             final int childRight = childLeft + child.getMeasuredWidth();
             child.layout(childLeft, childTop, childRight, childBottom);
 
+            
             // add the position to the mapping
             if(!mColMappings.get(nextCol).contains(position)){
             	
@@ -1448,8 +1481,9 @@ public class StaggeredGridView extends ViewGroup {
                 mItemBottoms[i] = childBottom + rec.getMarginBelow(i - nextCol);
             }
 
-            nextCol = getNextColumnDown();
+            
             position++;
+            nextCol = getNextColumnDown(position);
         }
 
         int lowestView = 0;
@@ -1549,18 +1583,23 @@ public class StaggeredGridView extends ViewGroup {
      * @return column that the next view filling downwards should occupy. This is the top-most
      *         position available.
      */
-    final int getNextColumnDown() {
+    final int getNextColumnDown(int position) {
         int result = -1;
         int topMost = Integer.MAX_VALUE;
 
         final int colCount = mColCount;
+        Log.w("NEXT", "*************");
         for (int i = 0; i < colCount; i++) {
             final int bottom = mItemBottoms[i];
+            Log.w("NEXT", "bottom: "+bottom+" position:"+position);
             if (bottom < topMost) {
                 topMost = bottom;
                 result = i;
             }
         }
+        
+        Log.w("NEXT", "result: "+result+" position:"+position);
+        
         return result;
     }
 

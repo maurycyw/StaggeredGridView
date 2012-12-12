@@ -132,6 +132,7 @@ public class StaggeredGridView extends ViewGroup {
     private float mTouchRemainderY;
     private int mActivePointerId;
     private int mMotionPosition;
+    private int mColWidth;
     
     private static final int TOUCH_MODE_IDLE = 0;
     private static final int TOUCH_MODE_DRAGGING = 1;
@@ -989,6 +990,7 @@ public class StaggeredGridView extends ViewGroup {
         final int paddingRight = getPaddingRight();
         final int itemMargin = mItemMargin;
         final int colWidth = (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
+        mColWidth = colWidth;
         int rebuildLayoutRecordsBefore = -1;
         int rebuildLayoutRecordsAfter = -1;
 
@@ -1145,6 +1147,7 @@ public class StaggeredGridView extends ViewGroup {
         final int itemMargin = mItemMargin;
         final int colWidth =
                 (getWidth() - paddingLeft - paddingRight - itemMargin * (mColCount - 1)) / mColCount;
+        mColWidth = colWidth;
         final int gridTop = getPaddingTop();
         final int fillTo = gridTop - overhang;
         int nextCol = getNextColumnUp();
@@ -1315,15 +1318,21 @@ public class StaggeredGridView extends ViewGroup {
     		for(int i = 0; i<this.mColCount; i++){
     			final View child = getChildAt(i);
     			final int left = child.getLeft();
-    			if(left > (this.getPaddingLeft()+this.mItemMargin)){
-    				// is right col
-    				if(column == 1){
-    					return child;
-    				}
-    			}else{
-    				if(column == 0){
-    					return child;
-    				}
+    			
+    			
+    			if(child!=null){
+        			
+        			int col = 0;
+        			
+        			// determine the column by cycling widths
+        			while( left > col*this.mColWidth){
+        				col++;
+        			}
+        			
+        			if(col == column){
+        				return child;
+        			}
+        			
     			}
     		}
     	}
@@ -1771,32 +1780,21 @@ public class StaggeredGridView extends ViewGroup {
         
         if (getChildCount() > 0) {
         	
-//        	if(getChildAt(0)!=null){
-//        		if(getChildAt(0).getLeft() > (this.getPaddingLeft()+this.mItemMargin)){
-//        			// this child is not the most left child.....
-//        			for(int i=0; i<getChildCount(); i++){
-//        				// get the first child aligned to the left
-//        				if(getChildAt(i).getLeft() < (this.getPaddingLeft()+this.mItemMargin)){
-//        					// found the child
-//        					ss.position += i; // update position
-//        					break;
-//        				}
-//        			}
-//        		}
-//        	}
-        	
         	int topOffsets[]= new int[this.mColCount];
         	
+        	if(this.mColWidth>0)
         	for(int i =0; i < mColCount; i++){
         		if(getChildAt(i)!=null){
-        			if(getChildAt(i).getLeft() > (this.getPaddingLeft()+this.mItemMargin)){
-        				// not left
-        				topOffsets[1] = getChildAt(i).getTop() - mItemMargin - getPaddingTop();
-        			}else{
-        				// is left
-        				topOffsets[0] = getChildAt(i).getTop() - mItemMargin - getPaddingTop();
+        			final View child = getChildAt(i);
+        			final int left = child.getLeft();
+        			int col = 0;
+        			
+        			// determine the column by cycling widths
+        			while( left > col*this.mColWidth){
+        				col++;
         			}
         			
+        			topOffsets[col] = getChildAt(i).getTop() - mItemMargin - getPaddingTop();
         		}
         			
         	}

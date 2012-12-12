@@ -896,7 +896,6 @@ public class StaggeredGridView extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-    	Log.w(TAG, "onLayout");
     	mInLayout = true;
         populate(false);
         mInLayout = false;
@@ -908,7 +907,7 @@ public class StaggeredGridView extends ViewGroup {
     }
 
     private void populate(boolean clearData) {
-    	Log.w(TAG, "populate()");
+
     	if (getWidth() == 0 || getHeight() == 0) {
             return;
         }
@@ -945,7 +944,6 @@ public class StaggeredGridView extends ViewGroup {
         final int top = getPaddingTop();
         for(int i = 0; i<colCount; i++){
         	final int offset =  top + ((mRestoreOffsets != null)? Math.min(mRestoreOffsets[i], 0) : 0);
-        	Log.w(TAG, "SET MTOPS: "+offset);
         	mItemTops[i] = (offset == 0) ? mItemTops[i] : offset;
         	mItemBottoms[i] = (offset == 0) ? mItemBottoms[i] : offset;
         }
@@ -998,8 +996,6 @@ public class StaggeredGridView extends ViewGroup {
 
         final int childCount = getChildCount();
         int amountRemoved = 0;
-        
-        Log.w(TAG, "childCount: "+childCount);
         
         for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
@@ -1143,7 +1139,7 @@ public class StaggeredGridView extends ViewGroup {
      * @return the max overhang beyond the beginning of the view of any added items at the top
      */
     final int fillUp(int fromPosition, int overhang) {
-//    	Log.w("FILLUP", "fromPosition:"+fromPosition+" overhang:"+overhang);
+    	
         final int paddingLeft = getPaddingLeft();
         final int paddingRight = getPaddingRight();
         final int itemMargin = mItemMargin;
@@ -1166,7 +1162,7 @@ public class StaggeredGridView extends ViewGroup {
         		}
         	}
         	
-        	displayMapping();
+//        	displayMapping();
         	
         	final View child = obtainView(position, null);
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
@@ -1235,7 +1231,7 @@ public class StaggeredGridView extends ViewGroup {
             int itemTop = mItemTops[nextCol];
             
             final int startFrom;
-//            if (span > 1) {
+            if (span > 1) {
                 int highest = mItemTops[nextCol];
                 for (int i = nextCol + 1; i < nextCol + span; i++) {
                     final int top = mItemTops[i];
@@ -1244,11 +1240,10 @@ public class StaggeredGridView extends ViewGroup {
                     }
                 }
                 startFrom = highest;
-//            } else {
-//                startFrom = mItemTops[nextCol];
-//            }
+            } else {
+                startFrom = mItemTops[nextCol];
+            }
             
-//            Log.w(TAG, "FILLUP found2 pos:"+position+" col:"+nextCol+" colTop:"+itemTop+" startFrom:"+startFrom);
             
             int childBottom = startFrom;
             int childTop = childBottom - childHeight;
@@ -1264,12 +1259,8 @@ public class StaggeredGridView extends ViewGroup {
             
             child.layout(childLeft, childTop, childRight, childBottom);
 
-            Log.w("FILLDOWN", "childTop: "+childTop+" position:"+position+" mItemTops[nextCol]:"+mItemTops[nextCol]);
             
-            
-            Log.w("TEST", "***** ");
             for (int i = nextCol; i < nextCol + span; i++) { 
-            	Log.w("TEST", "i: "+i+" itemTops:"+(childTop - rec.getMarginAbove(i-nextCol) - itemMargin)+" span:"+span);
                 mItemTops[i] = childTop - rec.getMarginAbove(i-nextCol) - itemMargin;
             }
 
@@ -1278,7 +1269,6 @@ public class StaggeredGridView extends ViewGroup {
         }
 
         int highestView = getHeight();
-        Log.w("HIGHESTVIEW", "*****");
         
         for (int i = 0; i < mColCount; i++) {
         	final View child = getFirstChildAtColumn(i);
@@ -1287,10 +1277,9 @@ public class StaggeredGridView extends ViewGroup {
         		break;
         	}
         	final int top = child.getTop();
-            Log.w("HIGHESTVIEW", "top:"+top);
+
         	if (top < highestView) {
                 highestView = top;
-                Log.w("HIGHESTVIEW", "highestView:"+highestView);
             }
         }
         
@@ -1361,20 +1350,6 @@ public class StaggeredGridView extends ViewGroup {
         int position = fromPosition;
 
         while (nextCol >= 0 && mItemBottoms[nextCol] < fillTo && position < mItemCount) {
-//        	Log.w("FILLDOWN", "position:"+fromPosition+" nextCol:"+nextCol);
-        	// check to see if its available... should not chekc should create
-//        	if(!mColMappings.get(nextCol).contains((Integer) position)){
-//        		for(int i=0; i < mColMappings.size(); i++){
-//        			if(mColMappings.get(i).contains((Integer) position)){
-//        				nextCol = i;
-//        				Log.w(TAG, "FILLDOWN found pos:"+position+" col:"+nextCol);
-//
-//        				break;
-//        			}
-//        		}
-//        	}else{
-//        		Log.w(TAG, "FILLDOWN found2 pos:"+position+" col:"+nextCol);
-//        	}
         	
         	final View child = obtainView(position, null);
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
@@ -1588,17 +1563,14 @@ public class StaggeredGridView extends ViewGroup {
         int topMost = Integer.MAX_VALUE;
 
         final int colCount = mColCount;
-        Log.w("NEXT", "*************");
+        
         for (int i = 0; i < colCount; i++) {
             final int bottom = mItemBottoms[i];
-            Log.w("NEXT", "bottom: "+bottom+" position:"+position);
             if (bottom < topMost) {
                 topMost = bottom;
                 result = i;
             }
         }
-        
-        Log.w("NEXT", "result: "+result+" position:"+position);
         
         return result;
     }
@@ -1762,7 +1734,6 @@ public class StaggeredGridView extends ViewGroup {
         // Reset to top of grid
         resetStateForGridTop();
 
-        Log.w(TAG, "setSelectionToTop");
         // Start populating again
         populate(false);
     }
@@ -1850,11 +1821,6 @@ public class StaggeredGridView extends ViewGroup {
         mDataChanged = true;
         mFirstPosition = ss.position;
         mRestoreOffsets = ss.topOffsets;
-        
-        Log.w(TAG, "OFFSETS **********");
-        for(Integer i : mRestoreOffsets){
-        	Log.w(TAG, "OFFSETS "+i);
-        }
         
         ArrayList<ColMap> convert = ss.mapping;
         
@@ -2280,7 +2246,6 @@ public class StaggeredGridView extends ViewGroup {
                         
                         setPressed(true);
                         layoutChildren(true);
-                        Log.w(TAG, "checkfortap");
                         positionSelector(mMotionPosition, child);
                         refreshDrawableState();
 
@@ -2288,10 +2253,8 @@ public class StaggeredGridView extends ViewGroup {
                         final boolean longClickable = isLongClickable();
 
                         if (mSelector != null) {
-                        	Log.w(TAG, "selector not null");
                             Drawable d = mSelector.getCurrent();
                             if (d instanceof TransitionDrawable) {
-                            	Log.w(TAG, "selector d not null");
                                 if (longClickable) {
                                     ((TransitionDrawable) d).startTransition(longPressTimeout);
                                 } else {
@@ -2301,7 +2264,6 @@ public class StaggeredGridView extends ViewGroup {
                         }
 
                         if (longClickable) {
-                        	Log.w(TAG, "isLongClickable");
                             if (mPendingCheckForLongPress == null) {
                                 mPendingCheckForLongPress = new CheckForLongPress();
                             }
@@ -2323,7 +2285,6 @@ public class StaggeredGridView extends ViewGroup {
     
     private class CheckForLongPress extends WindowRunnnable implements Runnable {
         public void run() {
-        	Log.w(TAG, "call CheckForLongPress");
             final int motionPosition = mMotionPosition;
             final View child = getChildAt(motionPosition - mFirstPosition);
             if (child != null) {
@@ -2383,7 +2344,7 @@ public class StaggeredGridView extends ViewGroup {
     
     boolean performLongPress(final View child,
             final int longPressPosition, final long longPressId) {
-    	Log.w(TAG, "perform CheckForLongPress");
+    	
     	// TODO : add check for multiple choice mode.. currently modes are yet to be supported
 
         boolean handled = false;

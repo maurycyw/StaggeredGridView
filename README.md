@@ -48,12 +48,14 @@ onItemLongClick(StaggeredGridView parent, View view, int position, long id);
 
 ## Tests
 
-No tests have been written however I have tested this View with 2.2.2 + devices. Please report any issues.
+No tests have been written however I have tested this View manually with 2.2.2 + devices. Please report any issues.
 
 
 ## TODO:
 
-* Implement more custom attributes to mirror GridView's attributes
+* implement more custom attributes to mirror GridView's attributes
 * develop tests
+* hideSelector()
+* support multiple choice mode
 * currently restoring position can result in the views to be slightly offset when user flings to the top. This is corrected by checking the offsets when position 0 is reached. Would like to dig deeper into the issue. 
 

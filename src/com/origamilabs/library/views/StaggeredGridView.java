@@ -136,6 +136,7 @@ public class StaggeredGridView extends ViewGroup {
     private int mMotionPosition;
     private int mColWidth;
     private int mNumCols;
+    private long mFirstAdapterId;
     
     private static final int TOUCH_MODE_IDLE = 0;
     private static final int TOUCH_MODE_DRAGGING = 1;
@@ -920,7 +921,7 @@ public class StaggeredGridView extends ViewGroup {
             return;
         }
 
-        if (mColCount == COLUMN_COUNT_AUTO) {
+    	if (mColCount == COLUMN_COUNT_AUTO) {
             final int colCount = getWidth() / mMinColWidth;
             if (colCount != mColCount) {
                 mColCount = colCount;
@@ -1175,6 +1176,9 @@ public class StaggeredGridView extends ViewGroup {
 //        	displayMapping();
         	
         	final View child = obtainView(position, null);
+        	
+        	if(child == null) continue;
+        	
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
             
             if(lp == null){
@@ -1368,6 +1372,9 @@ public class StaggeredGridView extends ViewGroup {
         while (nextCol >= 0 && mItemBottoms[nextCol] < fillTo && position < mItemCount) {
         	
         	final View child = obtainView(position, null);
+        	
+        	if(child == null) continue;
+        	
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
             if(lp == null){
             	lp = this.generateDefaultLayoutParams();
@@ -1691,6 +1698,7 @@ public class StaggeredGridView extends ViewGroup {
         clearAllState();
         mAdapter = adapter;
         mDataChanged = true;
+        
         if (adapter != null) {
             adapter.registerDataSetObserver(mObserver);
             mRecycler.setViewTypeCount(adapter.getViewTypeCount());
@@ -1837,6 +1845,7 @@ public class StaggeredGridView extends ViewGroup {
         }
         
         if(ss.firstId>=0){
+        	this.mFirstAdapterId = ss.firstId;
         	mSelectorPosition = INVALID_POSITION;	
         }
         
@@ -2029,6 +2038,16 @@ public class StaggeredGridView extends ViewGroup {
                 }
             }
 
+            // reset list if position does not exist or id for position has changed
+            if(mFirstPosition > mItemCount-1 || mAdapter.getItemId(mFirstPosition) != mFirstAdapterId){
+            	mFirstPosition = 0;
+            	Arrays.fill(mItemTops, 0);
+            	Arrays.fill(mItemBottoms, 0);
+            	
+            	if(mRestoreOffsets!=null)
+            	Arrays.fill(mRestoreOffsets, 0);
+            }
+            
             // TODO: consider repopulating in a deferred runnable instead
             // (so that successive changes may still be batched)
             requestLayout();

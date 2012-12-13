@@ -3,7 +3,7 @@ StaggeredGridView
 
 ## Introduction
 
-This is a modified version of Android's experimental StaggeredGridView. Includes own OnItemClickListener and OnItemLongClickListener, selector, and fixed position restore.
+This is a modified version of Android's experimental StaggeredGridView. The StaggeredGridView allows the user to create a GridView with uneven rows similar to how Pinterest looks. Includes own OnItemClickListener and OnItemLongClickListener, selector, and fixed position restore.
 
 ## Setup
 

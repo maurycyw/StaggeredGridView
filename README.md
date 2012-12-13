@@ -7,7 +7,7 @@ This is a modified version of Android's experimental StaggeredGridView. Includes
 
 ## Setup
 
-To use StaggeredGridView in your projects, simply add this project to your workspace then add it as a Library Project to your current project. 
+To use StaggeredGridView in your projects, simply add this project to your workspace then add it as a library project to your current project. 
 
 ## Usage
 
@@ -42,7 +42,7 @@ The StaggeredGridView includes its own interface's OnItemClickListener, and OnIt
 
 onItemClick(StaggeredGridView parent, View view, int position, long id);
 
-onItemLongClick(StaggeredGridView parent, View view, int position, long id)
+onItemLongClick(StaggeredGridView parent, View view, int position, long id);
 
 ```
 

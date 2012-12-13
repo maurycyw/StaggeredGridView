@@ -22,6 +22,8 @@ package com.origamilabs.library.views;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.origamilabs.library.R;
+
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -133,6 +135,7 @@ public class StaggeredGridView extends ViewGroup {
     private int mActivePointerId;
     private int mMotionPosition;
     private int mColWidth;
+    private int mNumCols;
     
     private static final int TOUCH_MODE_IDLE = 0;
     private static final int TOUCH_MODE_DRAGGING = 1;
@@ -302,6 +305,11 @@ public class StaggeredGridView extends ViewGroup {
     public StaggeredGridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         
+        TypedArray a=getContext().obtainStyledAttributes( attrs, R.styleable.StaggeredGridView);
+        
+        mColCount = a.getInteger(R.styleable.StaggeredGridView_numColumns, 2);
+        mDrawSelectorOnTop = a.getBoolean(R.styleable.StaggeredGridView_drawSelectorOnTop, false);
+        
         final ViewConfiguration vc = ViewConfiguration.get(context);
         mTouchSlop = vc.getScaledTouchSlop();
         mMaximumVelocity = vc.getScaledMaximumFlingVelocity();
@@ -312,7 +320,6 @@ public class StaggeredGridView extends ViewGroup {
         mBottomEdge = new EdgeEffectCompat(context);
         setWillNotDraw(false);
         setClipToPadding(false);
-        mDrawSelectorOnTop = false;
         this.setFocusableInTouchMode(false);
         
         if (mSelector == null) {

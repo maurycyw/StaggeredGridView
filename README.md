@@ -34,7 +34,6 @@ Attributes supported (same behavior as GridView):
         android:layout_height="wrap_content" />
 
 </LinearLayout>
-
 ```
 The StaggeredGridView includes its own interface's OnItemClickListener, and OnItemLongClickListener since StaggeredGridView does not extend an AdapterView. Behavior is the same.
 
@@ -43,12 +42,11 @@ The StaggeredGridView includes its own interface's OnItemClickListener, and OnIt
 onItemClick(StaggeredGridView parent, View view, int position, long id);
 
 onItemLongClick(StaggeredGridView parent, View view, int position, long id);
-
 ```
 
 ## Tests
 
-No tests have been written however I have tested this View manually with 2.2.2 + devices. Please report any issues.
+No tests have been written however I have tested this View manually with 2.2.2+ devices. Please report any issues.
 
 
 ## TODO:

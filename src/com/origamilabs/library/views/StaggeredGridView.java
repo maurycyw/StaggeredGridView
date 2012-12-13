@@ -306,10 +306,14 @@ public class StaggeredGridView extends ViewGroup {
     public StaggeredGridView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         
-        TypedArray a=getContext().obtainStyledAttributes( attrs, R.styleable.StaggeredGridView);
-        
-        mColCount = a.getInteger(R.styleable.StaggeredGridView_numColumns, 2);
-        mDrawSelectorOnTop = a.getBoolean(R.styleable.StaggeredGridView_drawSelectorOnTop, false);
+        if(attrs!=null){
+        	TypedArray a=getContext().obtainStyledAttributes( attrs, R.styleable.StaggeredGridView);
+            mColCount = a.getInteger(R.styleable.StaggeredGridView_numColumns, 2);
+            mDrawSelectorOnTop = a.getBoolean(R.styleable.StaggeredGridView_drawSelectorOnTop, false);
+        }else{
+        	mColCount = 2;
+        	mDrawSelectorOnTop = false;
+        }
         
         final ViewConfiguration vc = ViewConfiguration.get(context);
         mTouchSlop = vc.getScaledTouchSlop();

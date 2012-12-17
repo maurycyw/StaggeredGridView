@@ -635,7 +635,7 @@ public class StaggeredGridView extends ViewGroup {
             final boolean up;
             mPopulating = true;
             if (deltaY > 0) {
-                overhang = fillUp(mFirstPosition - 1, allowOverhang);
+                overhang = fillUp(mFirstPosition - 1, allowOverhang)+ mItemMargin;
                 up = true;
             } else {
                 overhang = fillDown(mFirstPosition + getChildCount(), allowOverhang) + mItemMargin;
@@ -1268,12 +1268,12 @@ public class StaggeredGridView extends ViewGroup {
             final int childLeft = paddingLeft + nextCol * (colWidth + itemMargin);
             final int childRight = childLeft + child.getMeasuredWidth();
             
-            if(position == 0){
-            	if(this.getChildCount()>1 && this.mColCount>1){
-            		childTop = this.getChildAt(1).getTop();
-            		childBottom = childTop + childHeight;
-            	}
-            }
+//            if(position == 0){
+//            	if(this.getChildCount()>1 && this.mColCount>1){
+//            		childTop = this.getChildAt(1).getTop();
+//            		childBottom = childTop + childHeight;
+//            	}
+//            }
             
             child.layout(childLeft, childTop, childRight, childBottom);
 
@@ -1305,28 +1305,6 @@ public class StaggeredGridView extends ViewGroup {
     }
 
     
-    private View getLastChildAtColumn(int column){
-    	
-    	if(this.getChildCount() > column){
-    		for(int i = getChildCount(); i>0; i--){
-    			final View child = getChildAt(i-1);
-    			final int left = child.getLeft();
-    			if(left > (this.getPaddingLeft()+this.mItemMargin)){
-    				// is right col
-    				if(column == 1){
-    					return child;
-    				}
-    			}else{
-    				if(column == 0){
-    					return child;
-    				}
-    			}
-    		}
-    	}
-    	
-    	return null;
-    }
-    
     private View getFirstChildAtColumn(int column){
     	
     	if(this.getChildCount() > column){
@@ -1340,7 +1318,7 @@ public class StaggeredGridView extends ViewGroup {
         			int col = 0;
         			
         			// determine the column by cycling widths
-        			while( left > col*(this.mColWidth + mItemMargin*2)){
+        			while( left > col*(this.mColWidth + mItemMargin*2) + getPaddingLeft() ){
         				col++;
         			}
         			
@@ -1810,7 +1788,7 @@ public class StaggeredGridView extends ViewGroup {
         			Log.w("mColWidth", mColWidth+" "+left);
         			
         			// determine the column by cycling widths
-        			while( left > col*(this.mColWidth + mItemMargin*2)){
+        			while( left > col*(this.mColWidth + mItemMargin*2) + getPaddingLeft() ){
         				col++;
         			}
         			

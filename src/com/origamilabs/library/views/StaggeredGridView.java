@@ -1269,7 +1269,7 @@ public class StaggeredGridView extends ViewGroup {
             final int childRight = childLeft + child.getMeasuredWidth();
             
             if(position == 0){
-            	if(this.getChildCount()>1){
+            	if(this.getChildCount()>1 && this.mColCount>1){
             		childTop = this.getChildAt(1).getTop();
             		childBottom = childTop + childHeight;
             	}

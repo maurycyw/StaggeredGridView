@@ -1340,7 +1340,7 @@ public class StaggeredGridView extends ViewGroup {
         			int col = 0;
         			
         			// determine the column by cycling widths
-        			while( left > col*this.mColWidth){
+        			while( left > col*(this.mColWidth + mItemMargin*2)){
         				col++;
         			}
         			
@@ -1807,9 +1807,10 @@ public class StaggeredGridView extends ViewGroup {
         			final View child = getChildAt(i);
         			final int left = child.getLeft();
         			int col = 0;
+        			Log.w("mColWidth", mColWidth+" "+left);
         			
         			// determine the column by cycling widths
-        			while( left > col*this.mColWidth){
+        			while( left > col*(this.mColWidth + mItemMargin*2)){
         				col++;
         			}
         			

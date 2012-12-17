@@ -137,6 +137,7 @@ public class StaggeredGridView extends ViewGroup {
     private int mColWidth;
     private int mNumCols;
     private long mFirstAdapterId;
+    private boolean mBeginClick;
     
     private static final int TOUCH_MODE_IDLE = 0;
     private static final int TOUCH_MODE_DRAGGING = 1;
@@ -458,6 +459,8 @@ public class StaggeredGridView extends ViewGroup {
                 if(mTouchMode != TOUCH_MODE_FLINGING && !mDataChanged && motionPosition >= 0 && getAdapter().isEnabled(motionPosition)){
                 	mTouchMode = TOUCH_MODE_DOWN;
                 	
+                	mBeginClick = true;
+                	
                 	if (mPendingCheckForTap == null) {
                     	mPendingCheckForTap = new CheckForTap();
                     }
@@ -470,6 +473,8 @@ public class StaggeredGridView extends ViewGroup {
                 break;
 
             case MotionEvent.ACTION_MOVE: {
+            	
+            	
                 final int index = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
                 if (index < 0) {
                     Log.e(TAG, "onInterceptTouchEvent could not find pointer with id " +
@@ -494,6 +499,8 @@ public class StaggeredGridView extends ViewGroup {
                         mVelocityTracker.clear();
                     }
                 }
+                
+                updateSelectorState();
             } break;
 
             case MotionEvent.ACTION_CANCEL:
@@ -513,6 +520,8 @@ public class StaggeredGridView extends ViewGroup {
                 	mTopEdge.onRelease();
                 	mBottomEdge.onRelease();
                 }
+                
+                mTouchMode = TOUCH_MODE_IDLE;
                 break;
 
             case MotionEvent.ACTION_UP: {
@@ -535,9 +544,7 @@ public class StaggeredGridView extends ViewGroup {
                 	mTouchMode = TOUCH_MODE_TAP;
                 } else {
                     mTouchMode = TOUCH_MODE_REST;
-                    updateSelectorState();
                 }
-                
                 
                 switch(prevTouchMode){
                 	case TOUCH_MODE_DOWN:
@@ -599,7 +606,6 @@ public class StaggeredGridView extends ViewGroup {
                                     
                                 } else {
                                     mTouchMode = TOUCH_MODE_REST;
-                                    updateSelectorState();
                                 }
                                 return true;
                             } else if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
@@ -608,10 +614,9 @@ public class StaggeredGridView extends ViewGroup {
                         }
                         
                         mTouchMode = TOUCH_MODE_REST;
-                        updateSelectorState();
                 }
                 
-                
+                mBeginClick = false;
                 
                 updateSelectorState();
             } break;
@@ -831,7 +836,7 @@ public class StaggeredGridView extends ViewGroup {
     }
     
     private void drawSelector(Canvas canvas) {
-    	if (!mSelectorRect.isEmpty() && mSelector != null) {
+    	if (!mSelectorRect.isEmpty() && mSelector != null && mBeginClick ) {
             final Drawable selector = mSelector;
             selector.setBounds(mSelectorRect);
             selector.draw(canvas);
@@ -2281,7 +2286,6 @@ public class StaggeredGridView extends ViewGroup {
                         }
                         
                         postInvalidate();
-                        
                     } else {
                         mTouchMode = TOUCH_MODE_DONE_WAITING;
                     }
@@ -2499,7 +2503,7 @@ public class StaggeredGridView extends ViewGroup {
      * @return True if the selector should be shown
      */
     boolean shouldShowSelector() {
-        return (hasFocus() && !isInTouchMode()) || touchModeDrawsInPressedState();
+        return ((hasFocus() && !isInTouchMode()) || touchModeDrawsInPressedState()) &&  ( mBeginClick ) ;
     }
     
     /**

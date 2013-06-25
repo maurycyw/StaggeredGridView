@@ -2056,7 +2056,7 @@ public class StaggeredGridView extends ViewGroup {
     	}
     	
     	private ColMap(Parcel in) {
-    		in.readIntArray(tempMap);
+    		tempMap = in.createIntArray();
     		values = new ArrayList<Integer>();
     	    for (int index = 0; index < tempMap.length; index++) {
     	    	values.add(tempMap[index]);

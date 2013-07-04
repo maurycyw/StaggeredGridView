@@ -1296,13 +1296,14 @@ public class StaggeredGridView extends ViewGroup {
 
         for (int i = 0; i < mColCount;) {
         	final View child = getFirstChildAtColumn(i);
-            LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            i += Math.max(lp.span,1);
 
         	if(child == null){
         		highestView = 0;
         		break;
         	}
+            LayoutParams lp = (LayoutParams) child.getLayoutParams();
+            i += Math.max(lp.span,1);
+
         	final int top = child.getTop();
 
         	if (top < highestView) {

@@ -1295,6 +1295,9 @@ public class StaggeredGridView extends ViewGroup {
         int highestView = getHeight();
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3b3f390ecfad60b228ff4967ab6c932cf2a10e68
         for (int i = 0; i < mColCount; i++) {
 =======
         for (int i = 0; i < mColCount;) {
@@ -1695,9 +1698,12 @@ public class StaggeredGridView extends ViewGroup {
         mAdapter = adapter;
         mDataChanged = true;
 <<<<<<< HEAD
+<<<<<<< HEAD
         mItemCount = adapter != null ? adapter.getCount() : 0;
 =======
 >>>>>>> a9050176a6f84f5ca399e2afdc8d627882bf842e
+=======
+>>>>>>> 3b3f390ecfad60b228ff4967ab6c932cf2a10e68
 
         if (adapter != null) {
             adapter.registerDataSetObserver(mObserver);
@@ -2127,9 +2133,12 @@ public class StaggeredGridView extends ViewGroup {
             in.readTypedList(mapping, ColMap.CREATOR);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 57a89f63166270cbfa981ca33ed7300280e65263
 =======
 >>>>>>> a9050176a6f84f5ca399e2afdc8d627882bf842e
+=======
+>>>>>>> 3b3f390ecfad60b228ff4967ab6c932cf2a10e68
         }
 
         @Override
@@ -2279,7 +2288,6 @@ public class StaggeredGridView extends ViewGroup {
                     	child.setPressed(true);
 
                         setPressed(true);
-                        layoutChildren(true);
                         positionSelector(mMotionPosition, child);
                         refreshDrawableState();
 

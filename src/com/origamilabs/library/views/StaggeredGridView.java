@@ -1294,14 +1294,7 @@ public class StaggeredGridView extends ViewGroup {
 
         int highestView = getHeight();
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 3b3f390ecfad60b228ff4967ab6c932cf2a10e68
         for (int i = 0; i < mColCount; i++) {
-=======
-        for (int i = 0; i < mColCount;) {
->>>>>>> a9050176a6f84f5ca399e2afdc8d627882bf842e
         	final View child = getFirstChildAtColumn(i);
 
         	if(child == null){
@@ -1697,13 +1690,8 @@ public class StaggeredGridView extends ViewGroup {
         clearAllState();
         mAdapter = adapter;
         mDataChanged = true;
-<<<<<<< HEAD
-<<<<<<< HEAD
+
         mItemCount = adapter != null ? adapter.getCount() : 0;
-=======
->>>>>>> a9050176a6f84f5ca399e2afdc8d627882bf842e
-=======
->>>>>>> 3b3f390ecfad60b228ff4967ab6c932cf2a10e68
 
         if (adapter != null) {
             adapter.registerDataSetObserver(mObserver);
@@ -2124,21 +2112,12 @@ public class StaggeredGridView extends ViewGroup {
             super(in);
             firstId = in.readLong();
             position = in.readInt();
-<<<<<<< HEAD
+            //TODO Check this - Most likely fix
             topOffsets = in.createIntArray();
-            mapping = in.createTypedList(ColMap.CREATOR);
-            
-=======
-            in.createIntArray(topOffsets);
-            in.readTypedList(mapping, ColMap.CREATOR);
-
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 57a89f63166270cbfa981ca33ed7300280e65263
-=======
->>>>>>> a9050176a6f84f5ca399e2afdc8d627882bf842e
-=======
->>>>>>> 3b3f390ecfad60b228ff4967ab6c932cf2a10e68
+            mapping = in.createTypedArrayList(ColMap.CREATOR);
+            //TODO Else, use previous code that compiled successfully
+            //in.readIntArray(topOffsets);
+            //in.readTypedList(mapping, ColMap.CREATOR);
         }
 
         @Override

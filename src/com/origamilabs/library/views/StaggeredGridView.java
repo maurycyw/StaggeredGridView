@@ -2062,7 +2062,7 @@ public class StaggeredGridView extends ViewGroup {
     	}
 
     	private ColMap(Parcel in) {
-    		tempMap = in.createIntArray();
+    		tempMap = in.createntArray();
     		values = new ArrayList<Integer>();
     	    for (int index = 0; index < tempMap.length; index++) {
     	    	values.add(tempMap[index]);
@@ -2112,12 +2112,8 @@ public class StaggeredGridView extends ViewGroup {
             super(in);
             firstId = in.readLong();
             position = in.readInt();
-            //TODO Check this - Most likely fix
             topOffsets = in.createIntArray();
             mapping = in.createTypedArrayList(ColMap.CREATOR);
-            //TODO Else, use previous code that compiled successfully
-            //in.readIntArray(topOffsets);
-            //in.readTypedList(mapping, ColMap.CREATOR);
         }
 
         @Override
@@ -2640,6 +2636,4 @@ public class StaggeredGridView extends ViewGroup {
 	public void setDrawSelectorOnTop(boolean mDrawSelectorOnTop) {
 		this.mDrawSelectorOnTop = mDrawSelectorOnTop;
 	}
-
-
 }

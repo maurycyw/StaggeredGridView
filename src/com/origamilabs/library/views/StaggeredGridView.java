@@ -456,7 +456,7 @@ public class StaggeredGridView extends ViewGroup {
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
                 mTouchRemainderY = 0;
                 
-                if(mTouchMode != TOUCH_MODE_FLINGING && !mDataChanged && motionPosition >= 0 && getAdapter().isEnabled(motionPosition)){
+                if(mTouchMode != TOUCH_MODE_DRAGGING && mTouchMode != TOUCH_MODE_FLINGING && !mDataChanged && motionPosition >= 0 && getAdapter().isEnabled(motionPosition)){
                 	mTouchMode = TOUCH_MODE_DOWN;
                 	
                 	mBeginClick = true;
@@ -536,14 +536,12 @@ public class StaggeredGridView extends ViewGroup {
                     mLastTouchY = 0;
                     invalidate();
                 } else {
-                    mTouchMode = TOUCH_MODE_IDLE;
-                }
-                
-                if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
-                    // TODO : handle
-                	mTouchMode = TOUCH_MODE_TAP;
-                } else {
-                    mTouchMode = TOUCH_MODE_REST;
+                    if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
+                        // TODO : handle
+                        mTouchMode = TOUCH_MODE_TAP;
+                    } else {
+                        mTouchMode = TOUCH_MODE_REST;
+                    }
                 }
                 
                 switch(prevTouchMode){

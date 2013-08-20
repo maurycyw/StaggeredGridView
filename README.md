@@ -7,6 +7,25 @@ This is a modified version of Android's experimental StaggeredGridView. The Stag
 
 ## Setup
 
+####Gradle
+
+You can add the lib via gradle. Just git submodule this lib, and add it in you settings and build:
+
+```groovy
+//Settings.gradle
+include ':yourProject', ':libraries:StaggeredGridView:Library' 
+```
+
+```groovy
+//build.gradle
+dependencies {
+    compile project(':libraries:StaggeredGridView:Library')
+    //other dependencies...
+}
+```
+
+####Old
+
 To use StaggeredGridView in your projects, simply add this project to your workspace then add it as a library project to your current project. 
 
 ## Usage

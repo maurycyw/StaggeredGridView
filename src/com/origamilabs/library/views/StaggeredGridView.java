@@ -1674,6 +1674,8 @@ public class StaggeredGridView extends ViewGroup {
         sglp.position = position;
         sglp.viewType = positionViewType;
 
+        //Set the updated LayoutParam before returning the view.
+        view.setLayoutParams(sglp);
         return view;
     }
 

@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.5.+'
+    }
+}
+
+apply plugin: 'android-library'
+apply plugin: 'maven'
+
+android {
+    compileSdkVersion 18
+    buildToolsVersion "18.0.1"
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java {
+                srcDir 'src/'
+            }
+            res {
+                srcDir 'res/'
+            }
+        }
+    }
+}
+
+dependencies {
+    compile "com.android.support:support-v4:18.0.0"
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository url: 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath
+            pom.artifactId = "StaggeredGridView"
+            pom.groupId = "com.origamilabs.library"
+            pom.version = "1.0"
+        }
+    }
+}
+task install(dependsOn: uploadArchives)

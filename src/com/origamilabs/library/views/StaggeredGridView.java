@@ -540,7 +540,7 @@ public class StaggeredGridView extends ViewGroup {
                     mTouchMode = TOUCH_MODE_IDLE;
                 }
 
-                if (!mDataChanged && mAdapter.isEnabled(motionPosition)) {
+                if (!mDataChanged && mAdapter!=null && mAdapter.isEnabled(motionPosition)) {
                     // TODO : handle
                 	mTouchMode = TOUCH_MODE_TAP;
                 } else {

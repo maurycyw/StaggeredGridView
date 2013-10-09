@@ -1321,11 +1321,9 @@ public class StaggeredGridView extends ViewGroup {
     	if(this.getChildCount() > column){
     		for(int i = 0; i<this.mColCount; i++){
     			final View child = getChildAt(i);
-    			final int left = child.getLeft();
 
-
-    			if(child!=null){
-
+    			if(child!=null) {
+    				final int left = child.getLeft();
         			int col = 0;
 
         			// determine the column by cycling widths

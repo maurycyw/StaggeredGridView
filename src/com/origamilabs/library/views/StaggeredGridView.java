@@ -21,8 +21,7 @@ package com.origamilabs.library.views;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import com.origamilabs.library.R;
+import java.util.HashSet;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -55,6 +54,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ListAdapter;
+
+import com.origamilabs.library.R;
 
 /**
  * ListView and GridView just not complex enough? Try StaggeredGridView!
@@ -156,7 +157,7 @@ public class StaggeredGridView extends ViewGroup {
     private final EdgeEffectCompat mTopEdge;
     private final EdgeEffectCompat mBottomEdge;
 
-    private ArrayList<ArrayList<Integer>> mColMappings = new ArrayList<ArrayList<Integer>>();
+    private ArrayList<HashSet<Integer>> mColMappings = new ArrayList<HashSet<Integer>>();
 
     private Runnable mPendingCheckForTap;
 
@@ -945,7 +946,7 @@ public class StaggeredGridView extends ViewGroup {
         if(mColMappings.size() != mColCount){
         	mColMappings.clear();
         	for(int i=0; i < mColCount; i++){
-        		mColMappings.add(new ArrayList<Integer>());
+        		mColMappings.add(new HashSet<Integer>());
         	}
         }
 
@@ -1175,9 +1176,10 @@ public class StaggeredGridView extends ViewGroup {
         while (nextCol >= 0 && mItemTops[nextCol] > fillTo && position >= 0) {
             // make sure the nextCol is correct. check to see if has been mapped
         	// otherwise stick to getNextColumnUp()
-        	if(!mColMappings.get(nextCol).contains((Integer) position)){
+        	Integer positionInt = Integer.valueOf(position);
+			if(!mColMappings.get(nextCol).contains(positionInt)){
         		for(int i=0; i < mColMappings.size(); i++){
-        			if(mColMappings.get(i).contains((Integer) position)){
+        			if(mColMappings.get(i).contains(positionInt)){
         				nextCol = i;
         				break;
         			}
@@ -1451,18 +1453,16 @@ public class StaggeredGridView extends ViewGroup {
 
 
             // add the position to the mapping
-            if(!mColMappings.get(nextCol).contains(position)){
+            Integer positionInt = Integer.valueOf(position);
+            if(!mColMappings.get(nextCol).contains(positionInt)){
 
             	// check to see if the mapping exists in other columns
             	// this would happen if list has been updated
-            	for(ArrayList<Integer> list : mColMappings){
-            		if(list.contains(position)){
-            			list.remove((Integer) position);
-            		}
+            	for(HashSet<Integer> cols : mColMappings){
+					cols.remove(positionInt);
             	}
 
-            	mColMappings.get(nextCol).add(position);
-
+            	mColMappings.get(nextCol).add(positionInt);
             }
 
 
@@ -1492,7 +1492,7 @@ public class StaggeredGridView extends ViewGroup {
     	StringBuilder sb = new StringBuilder();
     	int col = 0;
 
-    	for(ArrayList<Integer> map : this.mColMappings){
+    	for(HashSet<Integer> map : mColMappings){
     		sb.append("COL"+col+":");
     		sb.append(' ');
     		for(Integer i: map){
@@ -1814,8 +1814,8 @@ public class StaggeredGridView extends ViewGroup {
 
             // convert nested arraylist so it can be parcelable
             ArrayList<ColMap> convert = new ArrayList<ColMap>();
-            for(ArrayList<Integer> cols : mColMappings){
-            	convert.add(new ColMap(cols));
+            for(HashSet<Integer> cols : mColMappings){
+            	convert.add(new ColMap(new ArrayList<Integer>(cols)));
             }
 
             ss.mapping = convert;
@@ -1836,7 +1836,7 @@ public class StaggeredGridView extends ViewGroup {
         if(convert != null){
         	mColMappings.clear();
         	for(ColMap colMap : convert){
-        		mColMappings.add(colMap.values);
+        		mColMappings.add(new HashSet<Integer>(colMap.values));
         	}
         }
 

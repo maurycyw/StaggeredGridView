@@ -1018,7 +1018,7 @@ public class StaggeredGridView extends ViewGroup {
         final int childCount = getChildCount();
         int amountRemoved = 0;
 
-        for (int i = 0; i < childCount; i++) {
+        for (int i = 0; i < childCount-amountRemoved; i++) {
             View child = getChildAt(i);
             LayoutParams lp = (LayoutParams) child.getLayoutParams();
             final int col = lp.column;
@@ -1033,6 +1033,7 @@ public class StaggeredGridView extends ViewGroup {
                 	removeViewAt(i);
                 	if(i-1>=0) invalidateLayoutRecordsAfterPosition(i-1);
                 	amountRemoved++;
+                	i--;
                 	continue;
                 }else if (newView != child) {
                     removeViewAt(i);

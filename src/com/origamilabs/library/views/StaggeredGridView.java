@@ -2260,7 +2260,8 @@ public class StaggeredGridView extends ViewGroup {
                 if (child != null && !child.hasFocusable()) {
 
                     if (!mDataChanged) {
-                    	child.setSelected(true);
+                    	//Since there is no corresponding set false method. This action will caused selected status cannot resume.
+                    	//child.setSelected(true);
                     	child.setPressed(true);
 
                         setPressed(true);
